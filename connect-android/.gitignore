@@ -13,5 +13,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-
-/app/res/raw/web_domain.txt

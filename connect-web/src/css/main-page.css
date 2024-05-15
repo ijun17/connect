@@ -1,0 +1,81 @@
+
+
+.room-form {
+    /* display: none; */
+    width: 100%;
+    height: 400px;
+    background-color: var(--sub-bg-color);
+    border: 0px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: 0 0 3px 1px var(--border-color);
+    overflow: hidden;
+}
+
+.room-button-container {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: nowrap;
+
+    background-color: unset;
+}
+
+.create-room-button,
+.enter-room-button {
+    width: 50%;
+    height: 100%;
+    color: var(--sub-text-color);
+    font-size: 25px;
+    background-color: var(--point-color);
+    border: none;
+    padding: 20px 0;
+}
+
+.create-room-button:active,
+.enter-room-button:active{
+    background-color: var(--main-bg-color);
+    color: var(--point-color);
+}
+
+/* @media (hover: hover) {
+    .create-room-button:hover,
+    .enter-room-button:hover{
+        background-color: var(--main-bg-color);
+        color: var(--point-color);
+    }
+} */
+
+.room-button-click{
+    background-color: var(--sub-bg-color);
+    color: var(--point-color);
+}
+
+.room-input-container {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.create-room-input-container,
+.enter-room-input-container {
+    display: block;
+    text-align: center;
+    width: 100%;
+    color: var(--main-text-color);
+}
+
+.create-room-input-container{
+    display: none;
+}
+
+.room-input-container input {
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 16px;
+    padding: 10px;
+}
