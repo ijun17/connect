@@ -35,8 +35,8 @@
     font-weight: bold;
 }
 
-#connect-page .create-buttons>button:hover{
-    background-color: #DDD;
+#connect-page .create-buttons>button:active{
+    background-color: #EEE;
 }
 
 #connect-page .file-view{
@@ -74,7 +74,7 @@
     background-color:lightgray;
 }
 
-#connect-page .file-view>div>button:hover{
+#connect-page .file-view>div>button:active{
     background-color:#EEE;
 }
 

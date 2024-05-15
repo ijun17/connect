@@ -176,7 +176,7 @@ class ConnectPage extends WebPage{
             return (a.type=="folder" && b.type=="file")?-1:1
         })
         for(let file of folder){
-            const color=file.type=="folder"?"lightyellow":"lightgray";
+            const color=file.type=="folder"?"beige":"white";
             innerHTML += `<div class="file file-${file.type}" style="background:${color};">${file.name}</div>`;
         }
         div.innerHTML=innerHTML;
