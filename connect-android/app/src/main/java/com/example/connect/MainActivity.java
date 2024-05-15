@@ -21,10 +21,13 @@ import android.webkit.WebView;
 import android.webkit.WebSettings;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -34,10 +37,20 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
+    private static String webDomain;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        InputStream inputStream = getResources().openRawResource(R.raw.web_domain);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        try {
+            webDomain = reader.readLine();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -59,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 if(isConnectedToInternet(context)){
                     Intent intent = new Intent(context, WebViewActivity.class);
-                    intent.putExtra("domain", "https://tawkor.xyz/connect/");
+                    intent.putExtra("domain", webDomain);
                     context.startActivity(intent);
                 }else{
                     showNoInternetDialog(context);
