@@ -227,7 +227,7 @@ class ConnectPage extends WebPage{
 
             this.addEvent("#file-download-button","click",()=>{
                 let base64 = btoa(unescape(encodeURIComponent(this.get("#file-content").value)))
-                this.downloadFile(this.get("#file-title").innerText, this.base64ToBytes(base64))
+                this.downloadFile(this.get("#file-title").value, this.base64ToBytes(base64))
             })
         }
         this.get(".overlay").classList.remove("display-none");
