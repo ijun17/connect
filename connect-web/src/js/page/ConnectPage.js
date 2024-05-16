@@ -66,6 +66,7 @@ class ConnectPage extends WebPage{
         })
         this.addEvent(".create-file-button","click",()=>{
             this.showFile({name:"",content:"",end:true})
+            this.get("#file-title").readOnly=false;
         })
         this.addEvent(".create-folder-button","click",()=>{
             this.openPopup(`
@@ -77,6 +78,33 @@ class ConnectPage extends WebPage{
                 multi.send(JSON.stringify({type:"save folder", path:this.remotePath, name:folderName}))
             })
         })
+
+        this.addEvent(".folder-view","dragover",(event)=>{
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+        })
+
+        this.addEvent(".folder-view",'drop', (event) => {
+            console.log("drop")
+            event.preventDefault();
+            const files = event.dataTransfer.files;
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    console.log('File upload:', file.name);
+                    multi.send(JSON.stringify({
+                        type:"save file",
+                        path:this.remotePath,
+                        name:file.name,
+                        content:this.bytesToBase64(new Uint8Array(reader.result))
+                    }))
+                };
+                reader.onerror = () => {
+                    console.error('Error reading file:', file.name);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
         
         this.closePopup()
 
@@ -87,6 +115,9 @@ class ConnectPage extends WebPage{
             this.responseFolder(path)
             // setTimeout(()=>{this.responseFolder(path)},1000);
         }
+
+
+        
         return this.container;
     }
 
@@ -167,15 +198,17 @@ class ConnectPage extends WebPage{
         this.get(".create-buttons").classList.remove("display-none");
         this.remotePath = path
         const div = this.get(".folder-view")
-        let innerHTML=`<div class="file up-folder">..</div>`;
+        let innerHTML=`
+            <input type="file" class="display-none">
+            <div class="file up-folder">..</div>
+        `;
         folder.sort((a,b)=>{return a.name.localeCompare(b.name)})
         folder.sort((a,b)=>{
             if(a.type==b.type)return 0;
             return (a.type=="folder" && b.type=="file")?-1:1
         })
         for(let file of folder){
-            const color=file.type=="folder"?"beige":"white";
-            innerHTML += `<div class="file file-${file.type}" style="background:${color};">${file.name}</div>`;
+            innerHTML += `<div class="file file-${file.type}">${file.name}</div>`;
         }
         div.innerHTML=innerHTML;
     }
@@ -190,44 +223,48 @@ class ConnectPage extends WebPage{
         const div = this.get(".file-view")
         const name = file.name
         const extension = file.name.split('.').pop();
-        const isImage = ["jpg","jpeg","png"].includes(extension)
-        if(isImage){
+        let contentByte = this.base64ToBytes(recieved);
+        if(["jpg","jpeg","png"].includes(extension)){ //이미지
             div.innerHTML=`
-            <input id="file-title" type="text" value="${name}">
+            <input id="file-title" type="text" value="${name}" readonly>
             <div>
                 <button id="file-download-button">다운로드</button>
+                <span style="width:100%;text-align:right;">${this.getFileSize(contentByte.length)}</span>
             </div>
             <div><img src="data:image/${extension};base64,${recieved}"/></div>
             `
-
-            this.addEvent("#file-download-button","click",()=>{
-                this.downloadFile(this.get("#file-title").value,this.base64ToBytes(recieved))
-            })
-
-        }else{
-            const content = new TextDecoder().decode(this.base64ToBytes(recieved))
+        }else if(["txt","html","css","js","c","py","java","cpp","md","log"].includes(extension) || contentByte.length<16000){
+            const content =  new TextDecoder().decode(this.base64ToBytes(recieved))
             div.innerHTML=`
-            <input id="file-title" type="text" value="${name}">
+            <input id="file-title" type="text" value="${name}" readonly>
             <div>
                 <button id="file-save-button">저장</button>
                 <button id="file-download-button">다운로드</button>
+                <span style="width:100%;text-align:right;">${this.getFileSize(contentByte.length)}</span>
             </div>
             <textarea id="file-content">${content}</textarea>
             `
             this.addEvent("#file-save-button","click",()=>{
+                let editContentBase64 = btoa(unescape(encodeURIComponent(this.get("#file-content").value)))
+                contentByte = btoa(editContentBase64);
                 multi.send(JSON.stringify({
                     type:"save file",
                     path:this.remotePath,
                     name:this.get("#file-title").value,
-                    content:btoa(unescape(encodeURIComponent(this.get("#file-content").value)))
+                    content:editContentBase64
                 }))
             })
-
-            this.addEvent("#file-download-button","click",()=>{
-                let base64 = btoa(unescape(encodeURIComponent(this.get("#file-content").value)))
-                this.downloadFile(this.get("#file-title").value, this.base64ToBytes(base64))
-            })
+        }else{
+            div.innerHTML=`
+            <input id="file-title" type="text" value="${name}" readonly>
+            <div>
+                <button id="file-download-button">다운로드</button>
+                <span style="width:100%;text-align:right;">${this.getFileSize(contentByte.length)}</span>
+            </div>
+            <div class="center" style="width:100%;height:100%">지원하지 않는 파일 형식입니다. ${this.getFileSize(contentByte.length)}</div>
+            `
         }
+        this.addEvent("#file-download-button","click",()=>{this.downloadFile(name, contentByte)})
         this.get(".overlay").classList.remove("display-none");
         this.get(".file-view").classList.remove("display-none");
     }
@@ -240,7 +277,7 @@ class ConnectPage extends WebPage{
     base64ToBytes(base64) {
         const binString = atob(base64);
         return Uint8Array.from(binString, (m) => m.codePointAt(0));
-      }
+    }
       
     bytesToBase64(bytes) {
         const binString = Array.from(bytes, (x) => String.fromCodePoint(x)).join("");
@@ -266,5 +303,14 @@ class ConnectPage extends WebPage{
         link.download = fileName;
         link.click();
         window.URL.revokeObjectURL(link.href);
+    }
+
+    getFileSize(contentLength){
+        const sizeUnit = ["B","KB","MB"]
+        for(let i=0; i<3; i++){
+            if(contentLength/1024 < 1)return contentLength+sizeUnit[i];
+            contentLength = Math.floor(contentLength/1024)
+        }
+        return contentLength+"GB";
     }
 }

@@ -74,9 +74,14 @@ class SimpleWebRTC{
     disconnectToSignalingServer(){
         if(this.ws)this.ws.close();
     }
-    createWebRTC(isHost){
+    disconnectPeerConnection(){
         if(this.pc)this.pc.close();
-        if(this.dc)this.dc.close()
+        if(this.dc)this.dc.close();
+        this.pc=null;
+        this.dc=null;
+    }
+    createWebRTC(isHost){
+        this.disconnectPeerConnection();
         this.pc = new RTCPeerConnection(this.rtcConfiguration);
         if(!isHost)
             this.pc.ondatachannel = (event) =>{
@@ -92,7 +97,10 @@ class SimpleWebRTC{
         }
         this.pc.addEventListener("connectionstatechange", (event) => {
             console.log("peerconnection:",this.pc.connectionState)
-            if(this.pc.connectionState=="disconnected") this.ondatachannelclose();
+            if(this.pc.connectionState=="disconnected") {
+                this.ondatachannelclose();
+                this.disconnectPeerConnection();
+            }
         });
         if(isHost){
             this.dc = this.pc.createDataChannel("dataChannel", { reliable: true , ordered: true});
@@ -100,7 +108,7 @@ class SimpleWebRTC{
         }
     }
     applyDatachannelEvent(){
-        this.dc.onopen = () => {this.ondatachannelopen(); this.disconnectToSignalingServer(); console.log("datachannel: open")};
+        this.dc.onopen = () => {this.ondatachannelopen();  console.log("datachannel: open"); this.disconnectToSignalingServer();};
         this.dc.onmessage = (event) => {this.ondatachannelmessage(event.data)}
         this.dc.onclose = () => {this.ondatachannelclose();}
     }
