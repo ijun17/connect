@@ -84,11 +84,9 @@ class ConnectPage extends WebPage{
         this.currentMessage=null;
         if(this.isMobile()){
             let path = Native.getStartFolderPath();
-            setTimeout(()=>{this.responseFolder(path)},1000);
+            this.responseFolder(path)
+            // setTimeout(()=>{this.responseFolder(path)},1000);
         }
-
-
-        
         return this.container;
     }
 
