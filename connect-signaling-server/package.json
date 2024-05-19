@@ -1,0 +1,23 @@
+{
+  "name": "signalingserver",
+  "version": "1.0.0",
+  "description": "webrtc signaling server",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ijun17/WebRTC-test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ijun17/WebRTC-test/issues"
+  },
+  "homepage": "https://github.com/ijun17/WebRTC-test#readme",
+  "dependencies": {
+    "ws": "^8.13.0"
+  }
+}
